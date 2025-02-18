@@ -4,6 +4,7 @@ import { config } from '@/config/config';
 export const AxiosInterceptor = {
   initialize: () => {
     axios.defaults.baseURL = config.baseUrl;
+    console.log('🚀 ~ config.baseUrl:', config.baseUrl);
     axios.interceptors.request.use(
       config => {
         return config;
