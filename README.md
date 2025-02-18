@@ -7,7 +7,10 @@
 - node v20
 - set .env using .env.example
 - `cp .env.example .env`
--
+
+## Development
+
+- `npm run dev`
 
 # Backend
 
@@ -20,11 +23,5 @@
 
 ## Development
 
--
-- `npm run dev`
+- `npm run start:dev`
 - run migrations `npm run migration:run`
-
-# Assumptions
-
-- all users will come with status active,inactive
-- 
