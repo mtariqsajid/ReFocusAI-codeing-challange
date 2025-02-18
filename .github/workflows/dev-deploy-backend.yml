@@ -44,6 +44,8 @@ jobs:
         run: |
           echo "${{ secrets.ENV_DEV_BACKEND }}" > .env
           cat .env > ./dist/.env  # Copy .env to the build directory
+          cp package.json ./dist/package.json
+          cp package-lock.json ./dist/package-lock.json
         working-directory: backend
 
       - name: Check env
