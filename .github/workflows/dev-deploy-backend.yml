@@ -89,7 +89,7 @@ jobs:
               echo "installing node module : $pwd"
               npm install
 
-              npm run migration:run
+              npm run migration:run_prod
 
 
               pm2 stop $_pm2_server_ref --silent
