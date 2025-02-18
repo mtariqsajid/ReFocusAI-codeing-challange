@@ -58,7 +58,7 @@ jobs:
 
       - name: Deploy to Remote Server
         run: |
-          BACKEND_URL="https://nqjz8oephd.execute-api.us-east-1.amazonaws.com/dev/"
+          BACKEND_URL="https://test.api.gptglow.com"
           _remote="${{secrets.EC2_IP}}"
           _user="ubuntu"
           _remote_directory_name="refocus-backend"
