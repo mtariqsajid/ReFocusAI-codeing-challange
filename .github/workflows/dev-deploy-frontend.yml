@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
-      NEXT_PUBLIC_API_BASE_URL: https://test.api.gptglow.com
+      NEXT_PUBLIC_API_BASE_URL: https://test.api.gptglow.com/api
 
     steps:
       - name: Checkout code
