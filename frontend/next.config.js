@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output:'export',
   reactStrictMode: false, // This will disable strict mode
-};
+}
 
-export default nextConfig;
+module.exports = nextConfig 
