@@ -12,8 +12,7 @@ jobs:
     env:
       GENERATE_SOURCEMAP: true
       REACT_APP_IS_LOCAL_HOST: false
-      REACT_APP_FRONTEND_URL: https://d2sjftcgakx66y.cloudfront.net
-      REACT_APP_BACKEND_URL: https://nqjz8oephd.execute-api.us-east-1.amazonaws.com/dev
+      NEXT_PUBLIC_API_BASE_URL: https://nqjz8oephd.execute-api.us-east-1.amazonaws.com/dev
 
     steps:
       - name: Checkout code
