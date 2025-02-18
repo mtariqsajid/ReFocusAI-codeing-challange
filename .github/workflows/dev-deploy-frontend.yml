@@ -32,19 +32,23 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18" # Node.js version 20
+          node-version: "22" # Node.js version 20
           cache: "npm" # Enable caching for npm
+          cache-dependency-path: "backend/package-lock.json"
 
       - name: Install dependencies
         run: npm install
+        working-directory: frontend
 
       - name: Npm Run Build
         run: |
           npm run build
+        working-directory: frontend
 
       - name: Sync build files to S3
         run: |
-          aws s3 sync build/ s3://${{ secrets.AWS_S3_BUCKET }} --delete --acl public-read
+          aws s3 sync out/ s3://${{ secrets.AWS_S3_BUCKET }} --delete --acl public-read
+        working-directory: frontend
 
       - name: Invalidate CloudFront
         run: |
