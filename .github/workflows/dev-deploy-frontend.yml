@@ -27,7 +27,7 @@ jobs:
         run: |
           aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY }}
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY }}
-          aws configure set region ${{ vars.AWS_REGION }}
+          aws configure set region ${{ secrets.AWS_REGION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -44,7 +44,7 @@ jobs:
 
       - name: Sync build files to S3
         run: |
-          aws s3 sync build/ s3://${{ vars.AWS_S3_BUCKET }} --delete --acl public-read
+          aws s3 sync build/ s3://${{ secrets.AWS_S3_BUCKET }} --delete --acl public-read
 
       - name: Invalidate CloudFront
         run: |
@@ -52,5 +52,5 @@ jobs:
 
       - name: Frontend URL
         run: |
-          FRONTEND_URL="https://app-stag.heyed.co.uk"
+          FRONTEND_URL="https://d2sjftcgakx66y.cloudfront.net"
           echo "$FRONTEND_URL"
