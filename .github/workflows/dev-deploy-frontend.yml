@@ -10,8 +10,6 @@ jobs:
     runs-on: ubuntu-24.04
 
     env:
-      GENERATE_SOURCEMAP: true
-      REACT_APP_IS_LOCAL_HOST: false
       NEXT_PUBLIC_API_BASE_URL: https://nqjz8oephd.execute-api.us-east-1.amazonaws.com/dev
 
     steps:
