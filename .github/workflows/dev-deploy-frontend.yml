@@ -1,4 +1,4 @@
-name: Deploy to Stag Remote Server
+name: Deploy to Frontend Remote Server
 
 on:
   push:
