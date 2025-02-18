@@ -1,4 +1,4 @@
-name: Deploy to Frontend s3 and cloudfront
+name: Deploy to Stag Remote Server
 
 on:
   push:
@@ -9,14 +9,30 @@ jobs:
   deploy:
     runs-on: ubuntu-24.04
 
+    env:
+      GENERATE_SOURCEMAP: true
+      REACT_APP_IS_LOCAL_HOST: false
+      REACT_APP_FRONTEND_URL: https://d2sjftcgakx66y.cloudfront.net
+      REACT_APP_BACKEND_URL: https://nqjz8oephd.execute-api.us-east-1.amazonaws.com/dev
+
     steps:
-      - name: Checaukout code
+      - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Install AWS CLI
+        run: |
+          sudo snap install aws-cli --classic
+
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY }}
+          aws configure set region ${{ vars.AWS_REGION }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22" # Node.js version 20
+          node-version: "18" # Node.js version 20
           cache: "npm" # Enable caching for npm
 
       - name: Install dependencies
@@ -25,3 +41,16 @@ jobs:
       - name: Npm Run Build
         run: |
           npm run build
+
+      - name: Sync build files to S3
+        run: |
+          aws s3 sync build/ s3://${{ vars.AWS_S3_BUCKET }} --delete --acl public-read
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+
+      - name: Frontend URL
+        run: |
+          FRONTEND_URL="https://app-stag.heyed.co.uk"
+          echo "$FRONTEND_URL"
