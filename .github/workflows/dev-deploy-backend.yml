@@ -46,6 +46,7 @@ jobs:
           cat .env > ./dist/.env  # Copy .env to the build directory
           cp package.json ./dist/package.json
           cp package-lock.json ./dist/package-lock.json
+          cp tsconfig.json ./dist/tsconfig.json
         working-directory: backend
 
       - name: Check env
