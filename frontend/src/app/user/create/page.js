@@ -1,52 +1,109 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { USER_ROLES, USER_STATUS } from '@/constants/index';
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { USER_STATUS } from '@/constants/constsnt';
+import { createUser, getUserById, updateUser } from '@/app/user/apiCalls';
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import * as Yup from 'yup';
+import { useFormik } from 'formik';
 
-export default function CreateUserPage() {
+const getValidationSchema = (isEditMode) => Yup.object().shape({
+  firstName: Yup.string().required('First Name is required'),
+  lastName: Yup.string().required('Last Name is required'),
+  email: isEditMode ? Yup.string() : Yup.string().email('Invalid email address').required('Email is required'),
+  status: Yup.string().required('Status is required'),
+});
+
+const UserForm = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    role: USER_ROLES.USER,
-    status: USER_STATUS.ACTIVE,
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('id');
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      status: USER_STATUS.ACTIVE,
+    },
+    validationSchema: getValidationSchema(Boolean(userId)),
+    onSubmit: async (values) => {
+      try {
+        if (userId) {
+          const updateData = {
+            first_name: values.firstName,
+            last_name: values.lastName,
+            status: values.status,
+          };
+          await updateUser(userId, updateData);
+          router.push('/user/all');
+        } else {
+          const createData = {
+            first_name: values.firstName,
+            last_name: values.lastName,
+            email: values.email,
+            status: values.status,
+          };
+          await createUser(createData);
+          router.push('/user/all');
+        }
+      } catch (error) {
+        console.error('Operation failed:', error);
+      }
+    },
   });
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setIsLoading(true);
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (userId) {
+        try {
+          const userData = await getUserById(userId);
+          if (userData) {
+            formik.setValues({
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: userData.email || '',
+              status: userData.status || USER_STATUS.ACTIVE,
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch user:', error);
+        }
+      }
+    };
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Create user:', formData);
-      router.push('/dashboard/users');
-    } catch (error) {
-      console.error('Failed to create user:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    fetchUser();
+  }, [userId]);
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Create New User</h1>
-          <p className="mt-1 text-sm text-gray-600">Add a new user to the system</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {userId ? 'Edit User' : 'Create New User'}
+          </h1>
+          <p className="mt-1 text-sm text-gray-600">
+            {userId ? 'Update user information' : 'Add a new user to the system'}
+          </p>
         </div>
-        <button
+        <Button
+          variant="outline"
           onClick={() => router.back()}
-          className="inline-flex items-center justify-center rounded-md bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600 transition-colors"
         >
           Cancel
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={formik.handleSubmit} className="p-6">
           <div className="space-y-6">
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -56,13 +113,17 @@ export default function CreateUserPage() {
                 </label>
                 <input
                   id="firstName"
+                  name="firstName"
                   type="text"
-                  value={formData.firstName}
-                  onChange={e => setFormData({ ...formData, firstName: e.target.value })}
+                  value={formik.values.firstName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="Enter first name"
-                  required
                 />
+                {formik.touched.firstName && formik.errors.firstName && (
+                  <div className="text-sm text-red-600">{formik.errors.firstName}</div>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -71,13 +132,17 @@ export default function CreateUserPage() {
                 </label>
                 <input
                   id="lastName"
+                  name="lastName"
                   type="text"
-                  value={formData.lastName}
-                  onChange={e => setFormData({ ...formData, lastName: e.target.value })}
+                  value={formik.values.lastName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                   placeholder="Enter last name"
-                  required
                 />
+                {formik.touched.lastName && formik.errors.lastName && (
+                  <div className="text-sm text-red-600">{formik.errors.lastName}</div>
+                )}
               </div>
             </div>
 
@@ -88,74 +153,65 @@ export default function CreateUserPage() {
               </label>
               <input
                 id="email"
+                name="email"
                 type="email"
-                value={formData.email}
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                disabled={Boolean(userId)}
                 className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Enter email address"
-                required
               />
+              {formik.touched.email && formik.errors.email && (
+                <div className="text-sm text-red-600">{formik.errors.email}</div>
+              )}
             </div>
 
-            {/* Role & Status Fields */}
+            {/* Status Field */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="role" className="text-sm font-medium text-gray-900">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  value={formData.role}
-                  onChange={e => setFormData({ ...formData, role: e.target.value })}
-                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {Object.values(USER_ROLES).map(role => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="status" className="text-sm font-medium text-gray-900">
+                <label className="text-sm font-medium text-gray-900">
                   Status
                 </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={e => setFormData({ ...formData, status: e.target.value })}
-                  className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+                <Select
+                  defaultValue={formik.values.status}
+                  value={formik.values.status}
+                  onValueChange={(value) => formik.setFieldValue('status', value)}
                 >
-                  {Object.values(USER_STATUS).map(status => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      {formik.values.status}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.values(USER_STATUS).map(status => (
+                      <SelectItem key={status} value={status}>
+                        {status}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formik.touched.status && formik.errors.status && (
+                  <div className="text-sm text-red-600">{formik.errors.status}</div>
+                )}
               </div>
             </div>
 
             {/* Submit Button */}
             <div className="pt-4">
-              <button
+              <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full md:w-auto inline-flex items-center justify-center rounded-md bg-black px-8 py-2 text-sm font-semibold text-white hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors gap-2"
+                disabled={!formik.isValid}
+                className="w-full md:w-auto"
               >
-                {isLoading ? (
-                  <>
-                    <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create User'
-                )}
-              </button>
+                {userId ? 'Update User' : 'Create User'}
+              </Button>
             </div>
           </div>
         </form>
       </div>
     </div>
   );
-}
+};
+
+export default UserForm;

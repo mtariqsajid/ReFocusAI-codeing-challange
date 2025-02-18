@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { EntityManager, In, Repository } from 'typeorm';
+import { EntityManager, In, Not, Repository } from 'typeorm';
 import { User, UserStatus } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -89,7 +89,7 @@ export class UserService {
 
   async findOne(id: string) {
     const user = await this.entityManager.findOne(User, {
-      where: { id, status: In([UserStatus.ACTIVE, UserStatus.INACTIVE]) },
+      where: { id, status: Not(UserStatus.DEACTIVATED) },
     });
 
     if (!user) {
@@ -114,6 +114,9 @@ export class UserService {
     user.last_name = updateUserDto.last_name
       ? updateUserDto.last_name
       : user.last_name;
+
+    user.status = updateUserDto.status ? updateUserDto.status : user.status;
+
     const updatedUser = await this.entityManager.save(user);
     return {
       statu: true,

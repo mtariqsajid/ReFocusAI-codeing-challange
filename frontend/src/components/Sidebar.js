@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { UsersIcon } from '@heroicons/react/24/outline';
+import { Users } from 'lucide-react';
 
 export default function Sidebar({ isOpen }) {
   const pathname = usePathname();
@@ -11,7 +11,7 @@ export default function Sidebar({ isOpen }) {
     {
       title: 'Users',
       href: '/user/all',
-      icon: UsersIcon,
+      icon: Users,
     },
   ];
 

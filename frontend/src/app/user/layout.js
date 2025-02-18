@@ -5,8 +5,8 @@ import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-export default function DashboardLayout({ children }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+const DashboardLayout = ({ children }) => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -19,4 +19,6 @@ export default function DashboardLayout({ children }) {
       </div>
     </div>
   );
-}
+};
+
+export default DashboardLayout;
